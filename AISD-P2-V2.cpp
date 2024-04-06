@@ -64,6 +64,10 @@ public:
 		return arr[index];
 	}
 
+	void set(int index, char c) {
+		arr[index] = c;
+	}
+
 	int getSize() const {
 		return size;
 	}
@@ -125,7 +129,7 @@ void input(Dynamic_array& tab, char &c) {
 	}
 } 
 
-Pair PAWNS_NUMBER(Dynamic_array tab) {
+Pair PAWNS_NUMBER(const Dynamic_array& tab) {
 	Pair pawns;
 	for (int i = 0; i < tab.getSize(); i++) {
 		if (tab.get(i) == 'r') {
@@ -137,7 +141,7 @@ Pair PAWNS_NUMBER(Dynamic_array tab) {
 	return pawns;
 }
 
-bool IS_BOARD_CORRECT(Dynamic_array tab) {
+bool IS_BOARD_CORRECT(const Dynamic_array& tab) {
 	int blue = 0;
 	int red = 0;
 	for (int i = 0; i < tab.getSize(); i++) {
@@ -153,7 +157,7 @@ bool IS_BOARD_CORRECT(Dynamic_array tab) {
 	return false;
 }
 
-int BOARD_SIZE(Dynamic_array tab) {
+int BOARD_SIZE(const Dynamic_array& tab) {
 	return int(sqrt(tab.getSize()));
 }
 
@@ -167,7 +171,7 @@ void printArray(char** arr, int n) {
 	}
 }
 
-void fillArray(char** arr, Dynamic_array tab, int n) {
+void fillArray(char** arr, const Dynamic_array& tab, int n) {
 	int count = 0;
 	for (int i = 0; i < n; ++i) {
 		int row = i;
@@ -189,100 +193,76 @@ void fillArray(char** arr, Dynamic_array tab, int n) {
 	}
 }
 
-bool goDown(int x, int y, char** arr, int size, bool** visited) {
+bool checkMap(int x, int y, char** arr, int size, bool** visited, char c) {
 	// x to wiersz, y to kolumna
 	visited[x][y] = true;
-	if (arr[x][y] == 'b') {
-		if (x == size - 1) {
+	if (arr[x][y] == c) {
+		if (c == 'r' && y == size - 1) {
+			return true;
+		} else if (c == 'b' && x == size - 1) {
 			return true;
 		}
-		// 0 -1
-		if (y > 0) if(arr[x][y - 1] == 'b' && !visited[x][y - 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y - 1 << "\n";
-			if (goDown(x, y - 1, arr, size, visited)) return true;
-		}
-		// 0 +1
-		if (y + 1 < size) if(arr[x][y + 1] == 'b' && !visited[x][y + 1]) {
+		if (y + 1 < size) if (arr[x][y + 1] == c && !visited[x][y + 1]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y + 1 << "\n";
-			if (goDown(x, y + 1, arr, size, visited)) return true;
-		}
-		// +1 0
-		if (x + 1 < size) if(arr[x + 1][y] == 'b' && !visited[x + 1][y]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y << "\n";
-			if (goDown(x + 1, y, arr, size, visited)) return true;
+			if (checkMap(x, y + 1, arr, size, visited, c)) return true;
 		}
 		// +1 +1
-		if (x + 1 < size && y + 1 < size) if(arr[x + 1][y + 1] == 'b' && !visited[x + 1][y + 1]) {
+		if (y + 1 < size && x + 1 < size) if(arr[x + 1][y + 1] == c && !visited[x + 1][y + 1]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y + 1 << "\n";
-			if (goDown(x + 1, y + 1, arr, size, visited)) return true;
-		}
-		// -1 -1
-		if (x > 0 && y > 0) if (arr[x - 1][y - 1] == 'b' && !visited[x - 1][y - 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y - 1 << "\n";
-			if (goDown(x - 1, y - 1, arr, size, visited)) return true;
+			if (checkMap(x + 1, y + 1, arr, size, visited, c)) return true;
 		}
 		// -1 0
-		if (x > 0) if (arr[x - 1][y] == 'b' && !visited[x - 1][y]) {
+		if (x > 0) if(arr[x - 1][y] == c && !visited[x - 1][y]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y << "\n";
-			if (goDown(x - 1, y, arr, size, visited)) return true;
-		}
-	}
-	return false;
-}
-
-bool goRight(int x, int y, char** arr, int size, bool** visited) {
-	// x to wiersz, y to kolumna
-	visited[x][y] = true;
-	if (arr[x][y] == 'r') {
-		if (y == size - 1) {
-			return true;
-		}
-		if (y + 1 < size) if (arr[x][y + 1] == 'r' && !visited[x][y + 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y + 1 << "\n";
-			if (goRight(x, y + 1, arr, size, visited)) return true;
-		}
-		// +1 +1
-		if (y + 1 < size && x + 1 < size) if(arr[x + 1][y + 1] == 'r' && !visited[x + 1][y + 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y + 1 << "\n";
-			if (goRight(x + 1, y + 1, arr, size, visited)) return true;
-		}
-		// -1 0
-		if (x > 0) if(arr[x - 1][y] == 'r' && !visited[x - 1][y]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y << "\n";
-			if (goRight(x - 1, y, arr, size, visited)) return true;
+			if (checkMap(x - 1, y, arr, size, visited, c)) return true;
 		}
 		// + 1 0
-		if (x + 1 < size) if(arr[x + 1][y] == 'r' && !visited[x + 1][y]) {
+		if (x + 1 < size) if(arr[x + 1][y] == c && !visited[x + 1][y]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y << "\n";
-			if (goRight(x + 1, y, arr, size, visited)) return true;
+			if (checkMap(x + 1, y, arr, size, visited, c)) return true;
 		}
 		// -1 -1
-		if (x > 0 && y > 0) if (arr[x - 1][y - 1] == 'r' && !visited[x - 1][y - 1]) {
+		if (x > 0 && y > 0) if (arr[x - 1][y - 1] == c && !visited[x - 1][y - 1]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y - 1 << "\n";
-			if (goRight(x - 1, y - 1, arr, size, visited)) return true;
+			if (checkMap(x - 1, y - 1, arr, size, visited, c)) return true;
 		}
 		// 0 -1
-		if (y > 0) if (arr[x][y - 1] == 'r' && !visited[x][y - 1]) {
+		if (y > 0) if (arr[x][y - 1] == c && !visited[x][y - 1]) {
 			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y - 1 << "\n";
-			if (goRight(x, y - 1, arr, size, visited)) return true;
+			if (checkMap(x, y - 1, arr, size, visited, c)) return true;
 		}
 	}
 	return false;
 }
 
-void IS_GAME_OVER(Dynamic_array tab) {
+void IS_BOARD_POSSIBLE(const Dynamic_array& tab) {
 	int size = BOARD_SIZE(tab);
-	if (size == 1 && tab.get(0) == 'r') {
-		cout << "YES RED\n\n";
+
+	if (!IS_BOARD_CORRECT(tab)) {
+		cout << "NO\n\n";
 		return;
 	}
 
-	bool** visitedBlue = new bool*[size];
+	char** arr = new char* [size];
 	for (int i = 0; i < size; i++) {
-		visitedBlue[i] = new bool[size];
-		for (int j = 0; j < size; j++) {
-			visitedBlue[i][j] = false;
-		}
+		arr[i] = new char[size];
+	}
+
+	fillArray(arr, tab, size);
+	printArray(arr, size);
+
+	for (int i = 0; i < size; i++) {
+		delete[] arr[i];
+	}
+	delete[] arr;
+
+	return;
+}
+
+int IS_GAME_OVER(const Dynamic_array& tab) {
+	int size = BOARD_SIZE(tab);
+	if (size == 1 && tab.get(0) == 'r') {
+		return 1;
 	}
 
 	bool** visitedRed = new bool* [size];
@@ -293,25 +273,172 @@ void IS_GAME_OVER(Dynamic_array tab) {
 		}
 	}
 
-	char** arr = new char*[size];
+
+	bool** visitedBlue = new bool* [size];
+	for (int i = 0; i < size; i++) {
+		visitedBlue[i] = new bool[size];
+		for (int j = 0; j < size; j++) {
+			visitedBlue[i][j] = false;
+		}
+	}
+
+	char** arr = new char* [size];
 	for (int i = 0; i < size; i++) {
 		arr[i] = new char[size];
 	}
 
 	fillArray(arr, tab, size);
-	//printArray(arr, size);
 
 	for (int i = 0; i < size; i++) {
-		if (goDown(0, i, arr, size, visitedBlue)) {
-			cout << "YES BLUE\n\n";
-			return;
+		if (checkMap(0, i, arr, size, visitedBlue, 'b')) {
+			return 2;
 		}
-		if (goRight(i, 0, arr, size, visitedRed)) {
-			cout << "YES RED\n\n";
-			return;
+		if (checkMap(i, 0, arr, size, visitedRed, 'r')) {
+			return 1;
 		}
 	}
-	cout << "NO\n\n";
+
+	for (int i = 0; i < size; i++) {
+		delete[] visitedRed[i];
+		delete[] visitedBlue[i];
+		delete[] arr[i];
+	}
+	delete[] visitedRed;
+	delete[] visitedBlue;
+	delete[] arr;
+
+	return 0;
+}
+
+void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
+{
+	int size = BOARD_SIZE(tab);
+	if (IS_GAME_OVER(tab) || !IS_BOARD_CORRECT(tab))
+	{
+		cout << "NO\nNO\nNO\nNO\n";
+		return;
+	}
+
+	char** arr = new char* [size];
+	for (int i = 0; i < size; i++) {
+		arr[i] = new char[size];
+	}
+	fillArray(arr, tab, size);
+
+	bool win = false;
+	Pair pawns = PAWNS_NUMBER(tab);
+
+	int slots = size * size - pawns.red - pawns.blue;
+
+	// CAN RED WIN IN 1 MOVE WITH NAIVE OPPONENT
+	if ((pawns.red == pawns.blue && slots > 0) || (pawns.red > pawns.blue && slots > 1)) {
+		for (int i = 0; i < size * size; i++) {
+			if (tab.get(i) == '-') {
+				tab.set(i, 'r');
+				if (IS_GAME_OVER(tab) == 1) {
+					win = true;
+					tab.set(i, '-');
+					break;
+				}
+				tab.set(i, '-');
+			}
+		}
+	}
+	if (win) {
+		cout << "YES\n";
+		win = 0;
+	}
+	else {
+		cout << "NO\n";
+	}
+
+	// CAN BLUE WIN IN 1 MOVE WITH NAIVE OPPONENT
+	if ((pawns.red == pawns.blue && slots > 1) || (pawns.red > pawns.blue && slots > 0)) {
+		for (int i = 0; i < size * size; i++) {
+			if (tab.get(i) == '-') {
+				tab.set(i, 'b');
+				if (IS_GAME_OVER(tab) == 2) {
+					win = true;
+					tab.set(i, '-');
+					break;
+				}
+				tab.set(i, '-');
+			}
+		}
+	}
+	if (win) {
+		cout << "YES\n";
+		win = 0;
+	}
+	else {
+		cout << "NO\n";
+	}
+
+	// CAN RED WIN IN 2 MOVES WITH NAIVE OPPONENT
+	if ((pawns.red == pawns.blue && slots > 2) || (pawns.red > pawns.blue && slots > 3)) {
+		for (int i = 0; i < size * size; i++) {
+			if (tab.get(i) == '-') {
+				tab.set(i, 'r');
+				if(!IS_GAME_OVER(tab))
+				for (int j = 0; j < size * size; j++) {
+					if (tab.get(j) == '-') {
+						tab.set(j, 'r');
+						if (IS_GAME_OVER(tab) == 1) {
+							win = true;
+							tab.set(j, '-');
+							break;
+						}
+						tab.set(j, '-');
+					}
+				}
+				tab.set(i, '-');
+			}
+			if (win) break;
+		}
+	}
+	if (win) {
+		cout << "YES\n";
+		win = 0;
+	}
+	else {
+		cout << "NO\n";
+	}
+
+	// CAN BLUE WIN IN 2 MOVES WITH NAIVE OPPONENT
+	if ((pawns.red == pawns.blue && slots > 3) || (pawns.red > pawns.blue && slots > 2)) {
+		for (int i = 0; i < size * size; i++) {
+			if (tab.get(i) == '-') {
+				tab.set(i, 'b');
+				if (!IS_GAME_OVER(tab))
+				for (int j = 0; j < size * size; j++) {
+					if (tab.get(j) == '-') {
+						tab.set(j, 'b');
+						if (IS_GAME_OVER(tab) == 2) {
+							win = true;
+							tab.set(j, '-');
+							break;
+						}
+						tab.set(j, '-');
+					}
+				}
+				tab.set(i, '-');
+			}
+			if (win) break;
+		}
+	}
+	if (win) {
+		cout << "YES\n";
+		win = 0;
+	}
+	else {
+		cout << "NO\n";
+	}
+	
+	for (int i = 0; i < size; i++) {
+		delete[] arr[i];
+	}
+	delete[] arr;
+
 	return;
 }
 
@@ -346,19 +473,24 @@ int main()
 		} else if (function == "S_GAME_OVER") {
 			// 20 %
 			if (IS_BOARD_CORRECT(tab)) {
-				IS_GAME_OVER(tab);
+				int x = IS_GAME_OVER(tab);
+				if (x == 0) cout << "NO\n\n";
+				else if (x == 1) cout << "YES RED\n\n";
+				else if (x == 2) cout << "YES BLUE\n\n";
 			} else {
 				cout << "NO\n\n";
 			}
 		} else if (function == "S_BOARD_POSSIBLE") {
 			// 20 %
+			IS_BOARD_POSSIBLE(tab);
 			break;
 		} else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_NAIVE_OPPONENT") {
 			// 20 %
 			getline(cin, function);
 			getline(cin, function);
 			getline(cin, function);
-			break;
+			CAN_WIN_NAIVE_OPPONENT(tab);
+			cout << "\n\n";
 		} else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_PERFECT_OPPONENT") {
 			// 20 %
 			getline(cin, function);
