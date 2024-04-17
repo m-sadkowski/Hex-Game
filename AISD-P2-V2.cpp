@@ -208,34 +208,17 @@ bool checkMap(int x, int y, char** arr, int size, bool** visited, char c) {
 			return true;
 		}
 
-		if (y + 1 < size) if (arr[x][y + 1] == c && !visited[x][y + 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y + 1 << "\n";
-			if (checkMap(x, y + 1, arr, size, visited, c)) return true;
-		}
-		// +1 +1
-		if (y + 1 < size && x + 1 < size) if (arr[x + 1][y + 1] == c && !visited[x + 1][y + 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y + 1 << "\n";
-			if (checkMap(x + 1, y + 1, arr, size, visited, c)) return true;
-		}
-		// -1 0
-		if (x > 0) if (arr[x - 1][y] == c && !visited[x - 1][y]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y << "\n";
-			if (checkMap(x - 1, y, arr, size, visited, c)) return true;
-		}
-		// + 1 0
-		if (x + 1 < size) if (arr[x + 1][y] == c && !visited[x + 1][y]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x + 1 << " " << y << "\n";
-			if (checkMap(x + 1, y, arr, size, visited, c)) return true;
-		}
-		// -1 -1
-		if (x > 0 && y > 0) if (arr[x - 1][y - 1] == c && !visited[x - 1][y - 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x - 1 << " " << y - 1 << "\n";
-			if (checkMap(x - 1, y - 1, arr, size, visited, c)) return true;
-		}
-		// 0 -1
-		if (y > 0) if (arr[x][y - 1] == c && !visited[x][y - 1]) {
-			//cout << "z pola " << x << " " << y << " idziemy na " << x << " " << y - 1 << "\n";
-			if (checkMap(x, y - 1, arr, size, visited, c)) return true;
+		const int dx[] = { 0, 1, -1, 1, -1, 0 };
+		const int dy[] = { 1, 1, 0, 0, -1, -1 };
+
+		for (int i = 0; i < 6; i++) {
+			if (x + dx[i] >= 0 && x + dx[i] < size && y + dy[i] >= 0 && y + dy[i] < size) {
+				if (arr[x + dx[i]][y + dy[i]] == c && !visited[x + dx[i]][y + dy[i]]) {
+					if (checkMap(x + dx[i], y + dy[i], arr, size, visited, c)) {
+						return true;
+					}
+				}
+			}
 		}
 	}
 	return false;
@@ -247,20 +230,11 @@ int IS_GAME_OVER(const Dynamic_array& tab) {
 		return 1;
 	}
 
-	bool** visitedRed = new bool* [size];
+	bool** visited = new bool* [size];
 	for (int i = 0; i < size; i++) {
-		visitedRed[i] = new bool[size];
+		visited[i] = new bool[size];
 		for (int j = 0; j < size; j++) {
-			visitedRed[i][j] = false;
-		}
-	}
-
-
-	bool** visitedBlue = new bool* [size];
-	for (int i = 0; i < size; i++) {
-		visitedBlue[i] = new bool[size];
-		for (int j = 0; j < size; j++) {
-			visitedBlue[i][j] = false;
+			visited[i][j] = false;
 		}
 	}
 
@@ -272,23 +246,41 @@ int IS_GAME_OVER(const Dynamic_array& tab) {
 	fillArray(arr, tab, size);
 
 	for (int i = 0; i < size; i++) {
-		if (checkMap(0, i, arr, size, visitedBlue, 'b')) {
+		if (checkMap(0, i, arr, size, visited, 'b')) {
+			for (int j = 0; j < size; j++) {
+				delete[] visited[j];
+				delete[] arr[j];
+			}
+			delete[] visited;
+			delete[] arr;
 			return 2;
-		}
-		if (checkMap(i, 0, arr, size, visitedRed, 'r')) {
-			return 1;
 		}
 	}
 
 	for (int i = 0; i < size; i++) {
-		delete[] visitedRed[i];
-		delete[] visitedBlue[i];
-		delete[] arr[i];
+		for (int j = 0; j < size; j++) {
+			visited[i][j] = false;
+		}
 	}
-	delete[] visitedRed;
-	delete[] visitedBlue;
-	delete[] arr;
 
+	for (int i = 0; i < size; i++) {
+		if (checkMap(i, 0, arr, size, visited, 'r')) {
+			for (int j = 0; j < size; j++) {
+				delete[] visited[j];
+				delete[] arr[j];
+			}
+			delete[] visited;
+			delete[] arr;
+			return 1;
+		}
+	}
+
+	for (int j = 0; j < size; j++) {
+		delete[] visited[j];
+		delete[] arr[j];
+	}
+	delete[] visited;
+	delete[] arr;
 	return 0;
 }
 
@@ -306,6 +298,7 @@ void IS_BOARD_POSSIBLE(Dynamic_array tab) {
 	int size = BOARD_SIZE(tab);
 	Pair pawns = PAWNS_NUMBER(tab);
 
+	
 	if (IS_GAME_OVER(tab) == 1 && pawns.red - 1 == pawns.blue) {
 		for (int i = 0; i < size * size; i++) {
 			if (tab.get(i) == 'r') {
@@ -349,72 +342,31 @@ void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
 		return;
 	}
 
+	bool winRed1 = false;
+	bool winBlue1 = false;
+	bool winRed2 = false;
+	bool winBlue2 = false;
+
 	char** arr = new char* [size];
 	for (int i = 0; i < size; i++) {
 		arr[i] = new char[size];
 	}
 	fillArray(arr, tab, size);
 
-	bool win = false;
 	Pair pawns = PAWNS_NUMBER(tab);
 
 	int slots = size * size - pawns.red - pawns.blue;
 
-	// CAN RED WIN IN 1 MOVE WITH NAIVE OPPONENT
 	if ((pawns.red == pawns.blue && slots > 0) || (pawns.red > pawns.blue && slots > 1)) {
 		for (int i = 0; i < size * size; i++) {
 			if (tab.get(i) == '-') {
 				tab.set(i, 'r');
-				if (IS_GAME_OVER(tab) == 1) {
-					win = true;
-					tab.set(i, '-');
-					break;
-				}
-				tab.set(i, '-');
-			}
-		}
-	}
-	if (win) {
-		cout << "YES\n";
-		win = 0;
-	}
-	else {
-		cout << "NO\n";
-	}
-
-	// CAN BLUE WIN IN 1 MOVE WITH NAIVE OPPONENT
-	if ((pawns.red == pawns.blue && slots > 1) || (pawns.red > pawns.blue && slots > 0)) {
-		for (int i = 0; i < size * size; i++) {
-			if (tab.get(i) == '-') {
-				tab.set(i, 'b');
-				if (IS_GAME_OVER(tab) == 2) {
-					win = true;
-					tab.set(i, '-');
-					break;
-				}
-				tab.set(i, '-');
-			}
-		}
-	}
-	if (win) {
-		cout << "YES\n";
-		win = 0;
-	}
-	else {
-		cout << "NO\n";
-	}
-
-	// CAN RED WIN IN 2 MOVES WITH NAIVE OPPONENT
-	if ((pawns.red == pawns.blue && slots > 2) || (pawns.red > pawns.blue && slots > 3)) {
-		for (int i = 0; i < size * size; i++) {
-			if (tab.get(i) == '-') {
-				tab.set(i, 'r');
-				if (!IS_GAME_OVER(tab)) {
+				if (!winRed2 && !IS_GAME_OVER(tab) && ((pawns.red == pawns.blue && slots > 2) || (pawns.red > pawns.blue && slots > 3))) {
 					for (int j = 0; j < size * size; j++) {
 						if (tab.get(j) == '-') {
 							tab.set(j, 'r');
 							if (IS_GAME_OVER(tab) == 1) {
-								win = true;
+								winRed2 = true;
 								tab.set(j, '-');
 								break;
 							}
@@ -422,30 +374,25 @@ void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
 						}
 					}
 				}
+				if (!winRed1 && IS_GAME_OVER(tab) == 1) {
+					winRed1 = true;
+				}
 				tab.set(i, '-');
 			}
-			if (win) break;
+			if (winRed1 && winRed2) break;
 		}
 	}
-	if (win) {
-		cout << "YES\n";
-		win = 0;
-	}
-	else {
-		cout << "NO\n";
-	}
 
-	// CAN BLUE WIN IN 2 MOVES WITH NAIVE OPPONENT
-	if ((pawns.red == pawns.blue && slots > 3) || (pawns.red > pawns.blue && slots > 2)) {
+	if ((pawns.red == pawns.blue && slots > 1) || (pawns.red > pawns.blue && slots > 0)) {
 		for (int i = 0; i < size * size; i++) {
 			if (tab.get(i) == '-') {
 				tab.set(i, 'b');
-				if (!IS_GAME_OVER(tab)) {
+				if (!winBlue2 && !IS_GAME_OVER(tab) && ((pawns.red == pawns.blue && slots > 3) || (pawns.red > pawns.blue && slots > 2))) {
 					for (int j = 0; j < size * size; j++) {
 						if (tab.get(j) == '-') {
 							tab.set(j, 'b');
 							if (IS_GAME_OVER(tab) == 2) {
-								win = true;
+								winBlue2 = true;
 								tab.set(j, '-');
 								break;
 							}
@@ -453,18 +400,26 @@ void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
 						}
 					}
 				}
+				if (!winBlue1 && IS_GAME_OVER(tab) == 2) {
+					winBlue1 = true;
+				}
 				tab.set(i, '-');
 			}
-			if (win) break;
+			if (winBlue1 && winBlue2) break;
 		}
 	}
-	if (win) {
-		cout << "YES\n";
-		win = 0;
-	}
-	else {
-		cout << "NO\n";
-	}
+	
+	if(winRed1) cout << "YES\n";
+	else cout << "NO\n";
+
+	if (winBlue1) cout << "YES\n";
+	else cout << "NO\n";
+
+	if (winRed2) cout << "YES\n";
+	else cout << "NO\n";
+
+	if (winBlue2) cout << "YES\n";
+	else cout << "NO\n";
 
 	for (int i = 0; i < size; i++) {
 		delete[] arr[i];
@@ -476,6 +431,8 @@ void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
 
 int main()
 {
+	std::ios_base::sync_with_stdio(false);
+	std::cin.tie(NULL);
 	std::string function = "";
 	Dynamic_array tab;
 	char c;
