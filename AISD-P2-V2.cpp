@@ -1,5 +1,4 @@
 ﻿#include <iostream>
-#include <string>
 
 using namespace std;
 
@@ -134,12 +133,7 @@ void input(Dynamic_array& tab, char& c) {
 Pair PAWNS_NUMBER(const Dynamic_array& tab) {
 	Pair pawns;
 	for (int i = 0; i < tab.getSize(); i++) {
-		if (tab.get(i) == 'r') {
-			pawns.red++;
-		}
-		else if (tab.get(i) == 'b') {
-			pawns.blue++;
-		}
+		tab.get(i) == 'r' ? pawns.red++ : (tab.get(i) == 'b' ? pawns.blue++ : 0);
 	}
 	return pawns;
 }
@@ -148,12 +142,7 @@ bool IS_BOARD_CORRECT(const Dynamic_array& tab) {
 	int blue = 0;
 	int red = 0;
 	for (int i = 0; i < tab.getSize(); i++) {
-		if (tab.get(i) == 'r') {
-			red++;
-		}
-		else if (tab.get(i) == 'b') {
-			blue++;
-		}
+		tab.get(i) == 'r' ? red++ : (tab.get(i) == 'b' ? blue++ : 0);
 	}
 	if (red - blue == 0 || red - blue == 1) {
 		return true;
@@ -165,7 +154,7 @@ int BOARD_SIZE(const Dynamic_array& tab) {
 	return int(sqrt(tab.getSize()));
 }
 
-void printArray(char** arr, int n) {
+/*void printArray(char** arr, int n) {
 	for (int i = 0; i < n; i++) {
 		cout << i << " ";
 		for (int j = 0; j < n; j++) {
@@ -173,7 +162,7 @@ void printArray(char** arr, int n) {
 		}
 		cout << endl;
 	}
-}
+}*/
 
 void fillArray(char** arr, const Dynamic_array& tab, int n) {
 	int count = 0;
@@ -284,54 +273,47 @@ int IS_GAME_OVER(const Dynamic_array& tab) {
 	return 0;
 }
 
-void IS_BOARD_POSSIBLE(Dynamic_array tab) {
+bool IS_BOARD_POSSIBLE(Dynamic_array tab) {
 
 	if (IS_GAME_OVER(tab) == 0 && IS_BOARD_CORRECT(tab)) {
-		cout << "YES\n\n";
-		return;
+		return true;
 	}
 	else if (!IS_BOARD_CORRECT(tab)) {
-		cout << "NO\n\n";
-		return;
+		return false;
 	}
 
 	int size = BOARD_SIZE(tab);
 	Pair pawns = PAWNS_NUMBER(tab);
 
-	
+
 	if (IS_GAME_OVER(tab) == 1 && pawns.red - 1 == pawns.blue) {
 		for (int i = 0; i < size * size; i++) {
 			if (tab.get(i) == 'r') {
 				tab.set(i, '-');
 				if (IS_GAME_OVER(tab) != 1) {
-					cout << "YES\n\n";
 					tab.set(i, 'r');
-					return;
+					return true;
 				}
 				tab.set(i, 'r');
 			}
 		}
-		cout << "NO\n\n";
-		return;
+		return false;
 	}
 	else if (IS_GAME_OVER(tab) == 2 && pawns.blue == pawns.red) {
 		for (int i = 0; i < size * size; i++) {
 			if (tab.get(i) == 'b') {
 				tab.set(i, '-');
 				if (IS_GAME_OVER(tab) != 2) {
-					cout << "YES\n\n";
 					tab.set(i, 'b');
-					return;
+					return true;
 				}
 				tab.set(i, 'b');
 			}
 		}
-		cout << "NO\n\n";
-		return;
+		return false;
 	}
 
-	cout << "NO\n\n";
-	return;
+	return false;
 }
 
 void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
@@ -408,18 +390,14 @@ void CAN_WIN_NAIVE_OPPONENT(Dynamic_array tab)
 			if (winBlue1 && winBlue2) break;
 		}
 	}
-	
-	if(winRed1) cout << "YES\n";
-	else cout << "NO\n";
 
-	if (winBlue1) cout << "YES\n";
-	else cout << "NO\n";
+	winRed1 ? cout << "YES\n" : cout << "NO\n";
 
-	if (winRed2) cout << "YES\n";
-	else cout << "NO\n";
+	winBlue1 ? cout << "YES\n" : cout << "NO\n";
 
-	if (winBlue2) cout << "YES\n";
-	else cout << "NO\n";
+	winRed2 ? cout << "YES\n" : cout << "NO\n";
+
+	winBlue2 ? cout << "YES\n\n" : cout << "NO\n\n";
 
 	for (int i = 0; i < size; i++) {
 		delete[] arr[i];
@@ -435,6 +413,7 @@ int main()
 	std::cin.tie(NULL);
 	std::string function = "";
 	Dynamic_array tab;
+	char buffer[256];
 	char c;
 	std::cin >> c;
 	while (!cin.eof()) {
@@ -444,57 +423,51 @@ int main()
 			input(tab, c);
 		}
 		else {
-			getline(cin, function);
+			if (fgets(buffer, sizeof(buffer), stdin)) {
+				function = buffer;
+			}
 		}
-
-		if (function == "OARD_SIZE") { // READY
+		if (function == "OARD_SIZE\n") {
 			// 8 %
 			cout << BOARD_SIZE(tab) << "\n\n";
 		}
-		else if (function == "AWNS_NUMBER") { // READY
+		else if (function == "AWNS_NUMBER\n") {
 			// 8 %
 			Pair pawns = PAWNS_NUMBER(tab);
 			cout << pawns.red + pawns.blue << "\n\n";
 		}
-		else if (function == "S_BOARD_CORRECT") { // READY
+		else if (function == "S_BOARD_CORRECT\n") {
 			// 8 %
-			if (IS_BOARD_CORRECT(tab)) {
-				cout << "YES\n\n";
-			}
-			else {
-				cout << "NO\n\n";
-			}
+			IS_BOARD_CORRECT(tab) ? cout << "YES\n\n" : cout << "NO\n\n";
 		}
-		else if (function == "S_GAME_OVER") { // READY
+		else if (function == "S_GAME_OVER\n") {
 			// 20 %
 			if (IS_BOARD_CORRECT(tab)) {
 				int over = IS_GAME_OVER(tab);
-				if (over == 0) cout << "NO\n\n";
-				else if (over == 1) cout << "YES RED\n\n";
-				else if (over == 2) cout << "YES BLUE\n\n";
+				over == 0 ? cout << "NO\n\n" : cout << "YES "
+					<< (over == 1 ? "RED" : "BLUE") << "\n\n";
 			}
 			else {
 				cout << "NO\n\n";
 			}
 		}
-		else if (function == "S_BOARD_POSSIBLE") { // READY
+		else if (function == "S_BOARD_POSSIBLE\n") {
 			// 20 %
-			IS_BOARD_POSSIBLE(tab);
+			IS_BOARD_POSSIBLE(tab) ? cout << "YES\n\n" : cout << "NO\n\n";
 		}
-		else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_NAIVE_OPPONENT") { // READY
+		else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_NAIVE_OPPONENT\n") {
 			// 20 %
-			getline(cin, function);
-			getline(cin, function);
-			getline(cin, function);
+			for (int i = 0; i < 3; i++) {
+				fgets(buffer, sizeof(buffer), stdin);
+			}
 			CAN_WIN_NAIVE_OPPONENT(tab);
-			cout << "\n\n";
 		}
-		else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_PERFECT_OPPONENT") {
+		else if (function == "AN_RED_WIN_IN_1_MOVE_WITH_PERFECT_OPPONENT\n") {
 			// 16 %
-			getline(cin, function);
-			getline(cin, function);
-			getline(cin, function);
-			break;
+			return 0;
+		}
+		else if (function == "PRINT") {
+			tab.print();
 		}
 		std::cin >> c;
 	}
