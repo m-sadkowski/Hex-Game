@@ -1,9 +1,5 @@
 # Hex Board Analyzer
 
-![GitHub](https://img.shields.io/github/license/m-sadkowski/Hex-Board-Analyzer)
-![GitHub issues](https://img.shields.io/github/issues/m-sadkowski/Hex-Board-Analyzer)
-![GitHub stars](https://img.shields.io/github/stars/m-sadkowski/Hex-Board-Analyzer)
-
 This project is a **Hex board analyzer** implemented in **C++**. It answers various questions about a given Hex board state, such as board size, pawn count, correctness, game status, and winning possibilities. The Hex game is a strategic board game played on a hexagonal grid. More information about the game can be found [here](https://en.wikipedia.org/wiki/Hex_(board_game)).
 
 ---
